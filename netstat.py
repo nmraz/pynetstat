@@ -88,11 +88,30 @@ class SockInfo:
         self.timer = timer_str(timer)
         self.pid = get_sock_pid(inode)
 
-# quick test
-with open('/proc/net/tcp') as tcp_tab:
-    tcp_tab.readline()
-    for row in tcp_tab:
-        info = SockInfo('tcp', row)
-        print ('proto: ' + info.proto + ' recv_q:' + info.recv_q + ' sent_q:' + info.sent_q
-        + ' loc_addr:' + info.loc_addr + ' rem_addr:' + info.rem_addr + ' state:' + info.state
-        + ' timer:' + info.timer + ' pid:' + info.pid)
+
+def read_network_table(proto):
+    '''Reads the network table for the given protocol and returns
+    a list of active sockets
+    '''
+    ret = []
+    with open('/proc/net/{}'.format(proto)) as table:
+        table.readline()  # skip headings
+        for row in table:
+            ret.append(SockInfo(proto, row))
+    return ret
+
+def netstat():
+    '''Main function: prints information about current networking stats'''
+    #     proto recv-q send-q loc_addr rem_addr state pid timer
+    fmt = '{:5} {:>6} {:>6} {:23} {:23} {:11} {:11} {:21}'
+    info = read_network_table('tcp') + read_network_table('udp')
+
+    # headings
+    print 'Active internet connections (servers and established)'
+    print fmt.format('Proto', 'Recv-Q', 'Send-Q', 'Local Address', 'Foreign Address', 'State', 'Pid', 'Timer')
+    # data
+    for row in info:
+        print fmt.format(row.proto, row.recv_q, row.sent_q, row.loc_addr, row.rem_addr, row.state, row.pid, row.timer)
+
+if __name__ == '__main__':
+    netstat()
