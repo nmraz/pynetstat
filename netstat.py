@@ -49,7 +49,7 @@ def timer_str(raw_timer):
     '''Returns a string describing `raw_timer`'''
     timer_type, timer_val = raw_timer.split(':')
     timer_type, timer_val = (int(timer_type, 16), int(timer_val, 16))
-    return ['off ', '', 'keepalive ', 'timewait '][timer_type] + '(' + str(timer_val / 100.0) + ')'
+    return '{} ({})'.format(['off', '', 'keepalive', 'timewait'][timer_type], timer_val / 100.0)
 
 class SockInfo:
     '''Holds the following information about a socket:
