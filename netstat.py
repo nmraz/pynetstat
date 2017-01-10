@@ -9,13 +9,14 @@ def get_sock_pid(sock_inode):
     for pid in os.listdir('/proc'):
         if not pid.isdigit():
             continue  # filter out non-pids
-        fds = glob.glob('/proc/{}/fd/*'.format(pid))  # find all file descriptors open in pid
+        # find all file descriptors open in the process identified by pid
+        fds = glob.glob('/proc/{}/fd/*'.format(pid))
         for fd in fds:
             try:
                 if os.readlink(fd) == pat:
                     return pid
             except:
-                pass  # file not found
+                pass  # file not found/insufficient permission
     return '-'
 
 def prettify_addr(raw_addr):
@@ -101,7 +102,7 @@ def read_network_table(proto):
     return ret
 
 def netstat():
-    '''Main function: prints information about current networking stats'''
+    '''Main function: prints information about open networking sockets'''
     #     proto recv-q send-q loc_addr rem_addr state pid timer
     fmt = '{:5} {:>6} {:>6} {:23} {:23} {:11} {:11} {:21}'
     info = read_network_table('tcp') + read_network_table('udp')
